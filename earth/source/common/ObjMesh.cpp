@@ -138,16 +138,23 @@ bool Mesh::loadOBJ(const char * path){
 }
 
 bool Mesh::makeSphere(int steps){
+
   //TODO: Normals and texture coordinates
-  normals.push_back(vec3(0,0,1));
-  uvs.push_back(vec2(0,0));
+  vertices.clear();                      
+  normals.clear();                       
+  uvs.clear();                           
+  hasUV = true;    
 
   double step_theta = (2*M_PI)/(double)(steps-1);
   double step_phi   = (M_PI)/(double)(steps-1);
   
   std::vector < vec3 > pstrip0;
   std::vector < vec3 > pstrip1;
-  
+  std::vector<vec3> nstrip0;             
+  std::vector<vec3> nstrip1;             
+  std::vector<vec2> uvstrip0;            
+  std::vector<vec2> uvstrip1; 
+
   //latitude
   for(unsigned int i=0; i < steps; i++){
     double phi = i*step_phi;
@@ -156,24 +163,46 @@ bool Mesh::makeSphere(int steps){
       double theta = j*step_theta;
       vec3 p = vec3(-cos(theta)*sin(phi), cos(phi), sin(theta)*sin(phi));
       pstrip1.push_back(p);
+
+      vec3 n = normalize(p);               
+      vec2 uv = vec2(theta/(2.0*M_PI),     
+                    1.0 - phi/M_PI);      
+      nstrip1.push_back(n);                
+      uvstrip1.push_back(uv);  
     }
     
     for(unsigned int k=0; (k+1) < pstrip0.size(); k++){
       vertices.push_back(pstrip0[k]);
-      
+      normals .push_back(nstrip0[k]);      
+      uvs     .push_back(uvstrip0[k]);
+
       vertices.push_back(pstrip1[k]);
+      normals .push_back(nstrip1[k]);
+      uvs     .push_back(uvstrip1[k]);
       
       vertices.push_back(pstrip0[k+1]);
-      
+      normals .push_back(nstrip0[k+1]);
+      uvs     .push_back(uvstrip0[k+1]);
+
       vertices.push_back(pstrip0[k+1]);
-      
+      normals .push_back(nstrip0[k+1]);
+      uvs     .push_back(uvstrip0[k+1]);
+
       vertices.push_back(pstrip1[k]);
-       
+      normals .push_back(nstrip1[k]);
+      uvs     .push_back(uvstrip1[k]);
+
       vertices.push_back(pstrip1[k+1]);
+      normals .push_back(nstrip1[k+1]);
+      uvs     .push_back(uvstrip1[k+1]);
     }
     
     pstrip1.swap(pstrip0);
     pstrip1.clear();
+    nstrip1.swap(nstrip0);
+    nstrip1.clear();                 
+    uvstrip1.swap(uvstrip0);
+    uvstrip1.clear();
   }
   
   return true;
