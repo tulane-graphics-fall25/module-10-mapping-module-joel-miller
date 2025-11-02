@@ -245,7 +245,9 @@ void init(){
   glUniform1i( glGetUniformLocation(program, "textureEarth"), 0 );
 
   //TODO: ADD NIGHT TEXTURE
-
+  std::string night_img = source_path + "/images/BlackMarble.png";
+  loadFreeImageTexture(night_img.c_str(), night_texture, GL_TEXTURE2);
+  glUniform1i(glGetUniformLocation(program, "textureNight"), 2);
   //TODO: ADD CLOUD TEXTURE
   std::string clouds_img = source_path + "/images/cloud_combined.png";
   loadFreeImageTexture(clouds_img.c_str(), cloud_texture, GL_TEXTURE1);
@@ -396,7 +398,15 @@ int main(void){
     
     animate();
     glUniform1f( glGetUniformLocation(program, "animate_time"),   animate_time );
+    
+    const float radius = 5.0f;           // distance of light from origin
+    const float omega  = 1.5f;           // angular speed 
+    float a = omega * animate_time * 2.0f * M_PI; // radians
 
+    vec4 light_pos = vec4(radius * cos(a), 0.0f, radius * sin(a), 1.0f);
+
+    glUniform4fv(glGetUniformLocation(program, "LightPosition"), 1, light_pos);
+  
     // ====== Draw ======
     glBindVertexArray(vao);
     
@@ -407,6 +417,7 @@ int main(void){
 
     glActiveTexture(GL_TEXTURE0); glBindTexture(GL_TEXTURE_2D, month_texture);
     glActiveTexture(GL_TEXTURE1); glBindTexture(GL_TEXTURE_2D, cloud_texture);
+    glActiveTexture(GL_TEXTURE2); glBindTexture(GL_TEXTURE_2D, night_texture);
 
     glDrawArrays( GL_TRIANGLES, 0, mesh->vertices.size() );
     // ====== End: Draw ======
