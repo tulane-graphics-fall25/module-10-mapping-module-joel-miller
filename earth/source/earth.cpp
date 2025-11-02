@@ -90,14 +90,14 @@ void loadFreeImageTexture(const char* lpszPathName, GLuint textureID, GLuint GLt
   std::cout << "Image has " << image.size()/(width*height) << "color values per pixel.\n";
 
   GLint GL_format = GL_RGBA;
-
+  glPixelStorei(GL_UNPACK_ALIGNMENT, 1);  
   glActiveTexture( GLtex );
   glBindTexture( GL_TEXTURE_2D, textureID );
   glTexImage2D( GL_TEXTURE_2D, 0, GL_format, width, height, 0, GL_format, GL_UNSIGNED_BYTE, &image[0] );
-  glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
-  glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
-  glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-  glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+  glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+  glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+  glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+  glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
   glGenerateMipmap(GL_TEXTURE_2D);
   
   //Put things away and free memory
@@ -239,7 +239,7 @@ void init(){
   glGenTextures( 1, &cloud_texture );
   glGenTextures( 1, &perlin_texture);
   
-  std::string earth_img = source_path + "/images/checkerboard.png";
+  std::string earth_img = source_path + "/images/world.200405.3.png";
   loadFreeImageTexture(earth_img.c_str(), month_texture, GL_TEXTURE0);
     
   glUniform1i( glGetUniformLocation(program, "textureEarth"), 0 );
@@ -247,7 +247,9 @@ void init(){
   //TODO: ADD NIGHT TEXTURE
 
   //TODO: ADD CLOUD TEXTURE
-  
+  std::string clouds_img = source_path + "/images/cloud_combined.png";
+  loadFreeImageTexture(clouds_img.c_str(), cloud_texture, GL_TEXTURE1);
+  glUniform1i(glGetUniformLocation(program, "textureCloud"), 1);
   //TODO: ADD NOISE TEXTURE
 
   glBindVertexArray( vao );
@@ -402,6 +404,9 @@ int main(void){
     glUniformMatrix4fv( ModelViewLight, 1, GL_TRUE, user_MV*mesh->model_view);
     glUniformMatrix4fv( Projection, 1, GL_TRUE, projection );
     glUniformMatrix4fv( NormalMatrix, 1, GL_TRUE, transpose(invert(user_MV*mesh->model_view)));
+
+    glActiveTexture(GL_TEXTURE0); glBindTexture(GL_TEXTURE_2D, month_texture);
+    glActiveTexture(GL_TEXTURE1); glBindTexture(GL_TEXTURE_2D, cloud_texture);
 
     glDrawArrays( GL_TRIANGLES, 0, mesh->vertices.size() );
     // ====== End: Draw ======

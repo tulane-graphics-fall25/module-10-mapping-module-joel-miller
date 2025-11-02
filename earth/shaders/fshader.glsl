@@ -26,6 +26,9 @@ void main()
   
   vec4 diffuse_color = texture(textureEarth, texCoord );
   diffuse_color = Kd*diffuse_color;
+
+  float cloud = texture(textureCloud, texCoord).r;   // clouds map is grayscale
+  diffuse_color.rgb = min(diffuse_color.rgb + vec3(cloud), 1.0);
   
   fragColor = ambient + diffuse_color;
   fragColor = clamp(fragColor, 0.0, 1.0);
